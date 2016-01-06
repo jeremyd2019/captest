@@ -18,7 +18,7 @@ public class EventCode {
 
     @Element(name = "valueName", required = true)
     private String valueName;
-    @Element(name = "value", required = true)
+    @Element(name = "value", required = false)
     private String value;
 
     public EventCode() {

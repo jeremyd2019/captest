@@ -1,13 +1,27 @@
 package com.jdrake.apps.captest;
 
 import android.app.Activity;
+import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.util.Log;
+import android.util.Pair;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.jdrake.apps.captest.dummy.DummyContent;
+import com.appspot.captest.alerts.Alerts;
+import com.appspot.captest.alerts.model.CAPAlert;
+import com.appspot.captest.alerts.model.CAPAlertCollection;
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.services.AbstractGoogleClientRequest;
+import com.google.api.client.googleapis.services.GoogleClientRequestInitializer;
+import com.google.api.client.json.jackson2.JacksonFactory;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * A list fragment representing a list of Alerts. This fragment also supports
@@ -46,7 +60,7 @@ public class AlertListFragment extends ListFragment {
         /**
          * Callback for when an item has been selected.
          */
-        public void onItemSelected(String id);
+        public void onItemSelected(String url);
     }
 
     /**
@@ -55,7 +69,7 @@ public class AlertListFragment extends ListFragment {
      */
     private static Callbacks sDummyCallbacks = new Callbacks() {
         @Override
-        public void onItemSelected(String id) {
+        public void onItemSelected(String url) {
         }
     };
 
@@ -69,11 +83,58 @@ public class AlertListFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        new EndpointsAsyncTask().execute(new Pair<Context, Pair<List<String>, List<String>>>(getActivity(), new Pair<List<String>, List<String>>(null/*Arrays.asList("053035")*/, null)));
+    }
+    private static Alerts myApiService = null;
+    class EndpointsAsyncTask extends AsyncTask<Pair<Context, Pair<List<String>, List<String>>>, Void, CAPAlertCollection> {
 
-        // TODO: replace with a real list adapter.
-        setListAdapter(new ArrayAdapter<DummyContent.DummyItem>(getActivity(),
-                android.R.layout.simple_list_item_activated_1,
-                android.R.id.text1, DummyContent.ITEMS));
+        private Context context;
+
+        @Override
+        protected CAPAlertCollection doInBackground(Pair<Context, Pair<List<String>, List<String>>>... params) {
+            if(myApiService == null) {  // Only do this once
+                Alerts.Builder builder = new Alerts.Builder(AndroidHttp.newCompatibleTransport(),
+                        new JacksonFactory(), null)
+                        // options for running against local devappserver
+                        // - 10.0.2.2 is localhost's IP address in Android emulator
+                        // - turn off compression when running against local devappserver
+                        .setRootUrl("http://10.0.2.2:8080/_ah/api/")
+                        .setGoogleClientRequestInitializer(new GoogleClientRequestInitializer() {
+                            @Override
+                            public void initialize(AbstractGoogleClientRequest<?> abstractGoogleClientRequest) throws IOException {
+                                abstractGoogleClientRequest.setDisableGZipContent(true);
+                            }
+                        });
+                // end options for devappserver
+
+                myApiService = builder.build();
+            }
+
+            context = params[0].first;
+
+            try {
+                Alerts.AlertsOperations.GetAlerts request = myApiService.alerts().getAlerts();
+                if (params[0].second != null)
+                {
+                    if (params[0].second.first != null)
+                        request.setFipsIn(params[0].second.first);
+                    if (params[0].second.second != null)
+                        request.setUgcIn(params[0].second.second);
+                }
+                return request.execute();
+            } catch (IOException e) {
+                Log.e("AlertListFragment", "IOException getting alerts", e);
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(CAPAlertCollection result) {
+            // TODO: replace with a real list adapter.
+            AlertListFragment.this.setListAdapter(new ArrayAdapter<CAPAlert>(context,
+                    android.R.layout.simple_list_item_activated_1,
+                    android.R.id.text1, result.getItems()));
+        }
     }
 
     @Override
@@ -116,7 +177,7 @@ public class AlertListFragment extends ListFragment {
 
         // Notify the active callbacks interface (the activity, if the
         // fragment is attached to one) that an item has been selected.
-        mCallbacks.onItemSelected(DummyContent.ITEMS.get(position).id);
+        mCallbacks.onItemSelected(((ArrayAdapter<CAPAlert>)getListAdapter()).getItem(position).getLink());
     }
 
     @Override

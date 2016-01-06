@@ -9,9 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-
-import com.jdrake.apps.captest.dummy.DummyContent;
-
 import java.util.List;
 
 /**
