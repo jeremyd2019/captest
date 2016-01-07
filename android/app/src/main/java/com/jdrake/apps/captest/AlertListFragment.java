@@ -3,6 +3,7 @@ package com.jdrake.apps.captest;
 import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
@@ -132,7 +133,7 @@ public class AlertListFragment extends ListFragment {
         protected void onPostExecute(CAPAlertCollection result) {
             // TODO: replace with a real list adapter.
             AlertListFragment.this.setListAdapter(new ArrayAdapter<CAPAlert>(context,
-                    android.R.layout.simple_list_item_activated_1,
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ? android.R.layout.simple_list_item_activated_1 : android.R.layout.simple_list_item_1,
                     android.R.id.text1, result.getItems()));
         }
     }
