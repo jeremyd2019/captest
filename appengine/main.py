@@ -20,7 +20,10 @@ class MainHandler(webapp2.RequestHandler):
 		future = makeAlertKeySetAndFetchAlertsAtom()
 		oldkeys, xml = future.get_result()
 		parser = capparser.Parser()
-		parser.alertFactory = lambda id: models.Alert(parent=models.alerts_key(), id=id)
+		parser.alertFactory = lambda: models.Alert()
+		def setAlertId(alert, id):
+			alert.key = ndb.Key(models.Alert, id, parent=models.alerts_key())
+		parser.setAlertId = setAlertId
 		parser.geoPtFactory = models.GeoPt
 		def onAlertCreated(alert):
 			if alert.key in oldkeys:
