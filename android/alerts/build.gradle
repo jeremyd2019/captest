@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'maven'
 
 
-group = 'com.appspot.captest'
+group = 'com.appspot.captest_1180'
 archivesBaseName = 'alerts'
 version = 'v1-1.21.0-SNAPSHOT'
 

@@ -12,9 +12,9 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.appspot.captest.alerts.Alerts;
-import com.appspot.captest.alerts.model.CAPAlert;
-import com.appspot.captest.alerts.model.CAPAlertCollection;
+import com.appspot.captest_1180.alerts.Alerts;
+import com.appspot.captest_1180.alerts.model.CAPAlert;
+import com.appspot.captest_1180.alerts.model.CAPAlertCollection;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.services.AbstractGoogleClientRequest;
 import com.google.api.client.googleapis.services.GoogleClientRequestInitializer;
