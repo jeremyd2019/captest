@@ -16,7 +16,6 @@ def makeAlertKeySetAndFetchAlertsAtom():
 class MainHandler(webapp2.RequestHandler):
 	@ndb.toplevel
 	def get(self):
-		self.response.write('Hello world!')
 		future = makeAlertKeySetAndFetchAlertsAtom()
 		oldkeys, xml = future.get_result()
 		parser = capparser.Parser()
@@ -25,19 +24,20 @@ class MainHandler(webapp2.RequestHandler):
 			alert.key = ndb.Key(models.Alert, id, parent=models.alerts_key())
 		parser.setAlertId = setAlertId
 		parser.geoPtFactory = models.GeoPt
+		counter = [0, 0]
 		def onAlertCreated(alert):
 			if alert.key in oldkeys:
 				oldkeys.remove(alert.key)
-				self.response.write("Seen dupe " + repr(alert.key)+"\r\n<br/>\r\n")
+				counter[0] += 1
 			else:
 				alert.put_async()
-				self.response.write("Put " + repr(alert.key) + "\r\n<br/>\r\n")
+				counter[1] += 1
 
 		parser.onAlertCreated = onAlertCreated
 		parser.parse(xml)
 
 		ndb.delete_multi_async(oldkeys)
-		self.response.write("Delete " + repr(oldkeys) + "\r\n<br/>\r\n")
+		self.response.write("Dupes ignored %d, put %d, deleted %d<br>\r\n" % (counter[0], counter[1], len(oldkeys)))
 
 
 app = webapp2.WSGIApplication([
