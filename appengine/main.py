@@ -21,7 +21,7 @@ class MainHandler(webapp2.RequestHandler):
 		parser = capparser.Parser()
 		parser.alertFactory = lambda: models.Alert()
 		def setAlertId(alert, id):
-			alert.key = ndb.Key(models.Alert, id, parent=models.alerts_key())
+			alert.key = ndb.Key(models.Alert, id)
 		parser.setAlertId = setAlertId
 		parser.geoPtFactory = models.GeoPt
 		counter = [0, 0]

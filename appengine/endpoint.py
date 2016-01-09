@@ -102,7 +102,7 @@ class AlertsApi(remote.Service):
 			path='alerts', http_method='GET',
 			name='alerts.getAlerts')
 	def alerts_get(self, request):
-		q = models.Alert.query(ancestor=models.alerts_key())
+		q = models.Alert.query()
 		ugc_in = None
 		if request.ugc_in is not None and len(request.ugc_in) > 0:
 			ugc_in = models.Alert.ugclist.IN(request.ugc_in)
