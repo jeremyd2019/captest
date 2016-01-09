@@ -3,14 +3,16 @@ package com.jdrake.apps.captest;
 import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.util.Pair;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.appspot.captest_1180.alerts.Alerts;
 import com.appspot.captest_1180.alerts.model.CAPAlert;
@@ -21,7 +23,6 @@ import com.google.api.client.googleapis.services.GoogleClientRequestInitializer;
 import com.google.api.client.json.jackson2.JacksonFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -135,8 +136,25 @@ public class AlertListFragment extends ListFragment {
         protected void onPostExecute(CAPAlertCollection result) {
             // TODO: replace with a real list adapter.
             AlertListFragment.this.setListAdapter(new ArrayAdapter<CAPAlert>(context,
-                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ? android.R.layout.simple_list_item_activated_1 : android.R.layout.simple_list_item_1,
-                    android.R.id.text1, result.getItems()));
+                    R.layout.alert_list_item, result.getItems()) {
+                @Override
+                public View getView(int position, View convertView, ViewGroup parent) {
+                    View view;
+
+                    if (convertView == null) {
+                        LayoutInflater inflater = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                        view = inflater.inflate(R.layout.alert_list_item, parent, false);
+                    } else {
+                        view = convertView;
+                    }
+
+                    CAPAlert model = getItem(position);
+                    ((TextView) view.findViewById(R.id.listItemTitle)).setText(model.getTitle());
+                    ((TextView)view.findViewById(R.id.listItemSubtitle)).setText(model.getAreaDesc());
+
+                    return view;
+                }
+            });
         }
     }
 
