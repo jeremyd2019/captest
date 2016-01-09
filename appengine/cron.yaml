@@ -1,0 +1,4 @@
+cron:
+- description: update alert index
+  url: /
+  schedule: every 10 minutes 
