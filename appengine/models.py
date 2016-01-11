@@ -22,8 +22,8 @@ class Alert(ndb.Model):
 	certainty = ndb.StringProperty(indexed=False, choices=("Observed", "Likely", "Possible", "Unlikely", "Unknown"))
 	areaDesc = ndb.TextProperty(indexed=False)
 	polygon = ndb.GeoPtProperty(indexed=False, repeated=True)
-	fipslist = ndb.StringProperty(repeated=True)
-	ugclist = ndb.StringProperty(repeated=True)
+	fipslist = ndb.StringProperty(indexed=False, repeated=True)
+	ugclist = ndb.StringProperty(indexed=False, repeated=True)
 	vtec = ndb.StringProperty(indexed=False)
 
 	@classmethod
