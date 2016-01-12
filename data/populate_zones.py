@@ -58,13 +58,14 @@ with sqlite3.connect("zones.sqlite") as db:
 				raise
 	db.commit()
 
+	obsolete_fips = {"02201", "02232", "02280"}
 	with open("bp10nv15.dbx", "r") as f:
 		for line in f:
 			row = line.split('|')
 			try:
 				state_code = row[4][:2]
 				# HACK around garbage data
-				if state_code == "":
+				if state_code == "" or row[6] in obsolete_fips:
 					continue
 				elif state_code != "12":
 					state_code = state_map[state_code]
