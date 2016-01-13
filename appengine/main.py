@@ -11,13 +11,29 @@ def fetchAlertsAtom():
 	response = yield ndb.get_context().urlfetch('http://alerts.weather.gov/cap/us.php?x=0')
 	raise ndb.Return(response.content)
 
+@ndb.tasklet
+def getAlertKeySet(cacheclient):
+	keyset = yield cacheclient.get_multi_async(['alertkeyset'])
+	if keyset is not None:
+		keyset = keyset.get('alertkeyset')
+	if keyset is None:
+		keyset = yield models.Alert.makeKeySet()
+	raise ndb.Return(keyset)
+
+@ndb.tasklet
+def getAlertKeySetAndFetchAlertsAtom(cacheclient):
+	"""
+	Walk and chew gum at the same time, through cooperative multitasking.  Unfortunately results in one of those doXAndY function names.
+	"""
+	keyset, xml = yield getAlertKeySet(cacheclient), fetchAlertsAtom()
+	raise ndb.Return((keyset, xml))
+
 class MainHandler(webapp2.RequestHandler):
 	@ndb.toplevel
 	def get(self):
-		xmlfuture = fetchAlertsAtom()
-		oldkeys = memcache.get('keys')
-		if oldkeys is None:
-			oldkeys = models.Alert.makeKeySet().get_result()
+		cacheclient = memcache.Client()
+		future = getAlertKeySetAndFetchAlertsAtom(cacheclient)
+		oldkeys, xml = future.get_result()
 		parser = capparser.Parser()
 		parser.alertFactory = lambda: models.Alert()
 		def setAlertId(alert, id):
@@ -36,11 +52,11 @@ class MainHandler(webapp2.RequestHandler):
 				counter[1] += 1
 
 		parser.onAlertCreated = onAlertCreated
-		parser.parse(xmlfuture.get_result())
+		parser.parse(xml)
 
 		ndb.delete_multi_async(oldkeys)
 		self.response.write("Dupes ignored %d, put %d, deleted %d<br>\r\n" % (counter[0], counter[1], len(oldkeys)))
-		memcache.set('keys', curkeys)
+		cacheclient.set('alertkeyset', curkeys)
 
 
 app = webapp2.WSGIApplication([
