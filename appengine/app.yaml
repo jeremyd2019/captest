@@ -9,6 +9,9 @@ handlers:
   static_files: favicon.ico
   upload: favicon\.ico
 
+- url: /data\.cgi
+  script: data.app
+
 - url: /_ah/spi/.*
   script: endpoint.APPLICATION
 
