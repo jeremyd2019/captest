@@ -1,4 +1,4 @@
 cron:
 - description: update alert index
-  url: /
+  url: /cron/updateAlertIndex
   schedule: every 10 minutes 

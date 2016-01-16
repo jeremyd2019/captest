@@ -28,7 +28,7 @@ def getAlertKeySetAndFetchAlertsAtom(cacheclient):
 	keyset, xml = yield getAlertKeySet(cacheclient), fetchAlertsAtom()
 	raise ndb.Return((keyset, xml))
 
-class MainHandler(webapp2.RequestHandler):
+class UpdateAlertIndexHandler(webapp2.RequestHandler):
 	@ndb.toplevel
 	def get(self):
 		cacheclient = memcache.Client()
@@ -60,5 +60,5 @@ class MainHandler(webapp2.RequestHandler):
 
 
 app = webapp2.WSGIApplication([
-	('/', MainHandler)
+	('/cron/updateAlertIndex', UpdateAlertIndexHandler)
 ], debug=True)

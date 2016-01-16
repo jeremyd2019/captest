@@ -15,10 +15,14 @@ handlers:
 - url: /_ah/spi/.*
   script: endpoint.APPLICATION
 
-- url: .*
-  script: main.app
+- url: /cron/.*
+  script: cron.app
   secure: always
   login: admin
+
+- url: /(?:index.html)?
+  static_files: index.html
+  upload: index\.html
 
 libraries:
 - name: webapp2
