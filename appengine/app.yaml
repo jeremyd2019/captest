@@ -20,6 +20,11 @@ handlers:
   secure: always
   login: admin
 
+- url: /admin/.*
+  script: admin.app
+  secure: always
+  login: admin
+
 - url: /(?:index.html)?
   static_files: index.html
   upload: index\.html
