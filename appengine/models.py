@@ -35,7 +35,7 @@ class Alert(ndb.Model):
 			ret.add(qit.next())
 		raise ndb.Return(ret)
 
-class DBVersion(ndb.Model):
+class DBUpdate(ndb.Model):
 	schema_version = ndb.IntegerProperty('s', required=True)
 	source_time = ndb.DateTimeProperty('t', required=True)
 	delta_gs_object_name = ndb.StringProperty('g', indexed=False)

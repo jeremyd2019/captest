@@ -18,7 +18,7 @@ class DataHandler(webapp2.RequestHandler):
 		since = self.request.get('since')
 		since = "0001-01-01 00:00:00" if since is None or since == "" else since
 		since = datetime.datetime.strptime(since, "%Y-%m-%d %H:%M:%S")
-		dbversion = models.DBVersion.query(models.DBVersion.schema_version == schema_ver, models.DBVersion.source_time <= since).order(-models.DBVersion.source_time).get()
+		dbversion = models.DBUpdate.query(models.DBUpdate.schema_version == schema_ver, models.DBUpdate.source_time <= since).order(-models.DBUpdate.source_time).get()
 
 		expiry = int(time.time()) + 30
 		obj = dbversion.delta_gs_object_name
