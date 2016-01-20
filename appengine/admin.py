@@ -3,26 +3,41 @@
 import webapp2
 import models
 import datetime
+import gzip
+import shutil
+import os
 
 from google.appengine.api import app_identity
-from google.appengine.ext import blobstore
 from google.appengine.ext import ndb
-from google.appengine.ext.webapp import blobstore_handlers
+
+import cloudstorage as gcs
 
 
-class UploadDBUpdate(blobstore_handlers.BlobstoreUploadHandler):
+class UploadDBUpdate(webapp2.RequestHandler):
 	def post(self):
 		schema_version = int(self.request.get('schema'))
 		st = self.request.get('source_time')
 		if st is None or st == "":
 			st = '0001-01-01 00:00:00'
 		st = datetime.datetime.strptime(st, "%Y-%m-%d %H:%M:%S")
+		delta_file = self.request.POST["delta_file"]
+		delta_file.file.seek(0, os.SEEK_END)
+		delta_file_len = delta_file.file.tell()
+		delta_file.file.seek(0, os.SEEK_SET)
 		dbversion = models.DBUpdate.query(models.DBUpdate.schema_version == schema_version, models.DBUpdate.source_time == st).get() or models.DBUpdate()
 		dbversion.schema_version = schema_version
 		dbversion.source_time = st
-		if dbversion.delta_gs_object_name is not None:
-			blobstore.delete(blobstore.create_gs_key(dbversion.delta_gs_object_name))
-		dbversion.delta_gs_object_name = self.get_file_infos()[0].gs_object_name
+		dbversion.delta_gs_object_name = "/%s/v%d/zones_%s.json" % (app_identity.get_default_gcs_bucket_name(), dbversion.schema_version, dbversion.source_time.isoformat().replace(':', '_'))
+
+		# NOTE not using with intentionally, sine the docs say we only want to close() if we want the file to be committed (ie, on success only)
+		options = {'content-encoding': 'gzip'} if delta_file_len > 150 else {}
+		gf = gcs.open(dbversion.delta_gs_object_name, "w", content_type="application/json; charset=utf-8", options=options)
+		if delta_file_len > 150:
+			with gzip.GzipFile(fileobj=gf, mode="wb") as gz:
+				shutil.copyfileobj(delta_file.file, gz)
+		else:
+			shutil.copyfileobj(delta_file.file, gf)
+		gf.close()
 		dbversion.put()
 
 class UploadDBUpdateForm(webapp2.RequestHandler):
@@ -32,14 +47,14 @@ class UploadDBUpdateForm(webapp2.RequestHandler):
 <title>Upload DB Update</title>
 </head>
 <body>
-<form action="%s" method="POST" enctype="multipart/form-data">
+<form action="/admin/uploadDBUpdate" method="POST" enctype="multipart/form-data">
 <label for="schema">Schema Version:</label>&nbsp;<input type="text" name="schema"/><br/>
 <label for="source_time">Source Timestamp:</label>&nbsp;<input type="text" name="source_time"/><br/>
 <label for="delta_file">Delta File:</label><input type="file" name="delta_file"/><br/>
 <input type="submit" name="submit" value="Upload"/>
 </form>
 </body>
-</html>""" % blobstore.create_upload_url('/admin/uploadDBUpdate', gs_bucket_name=app_identity.get_default_gcs_bucket_name()))
+</html>""")
 
 app = webapp2.WSGIApplication([
 	('/admin/uploadDBUpdate', UploadDBUpdate),
