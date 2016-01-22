@@ -7,7 +7,7 @@ CREATE TABLE database_version (
 );
 
 -- increment the schema_version when making breaking changes
-INSERT INTO database_version(schema_version, last_update_time) VALUES (1, datetime('now'));
+INSERT INTO database_version(schema_version, last_update_time) VALUES (1, datetime('0001-01-01 00:00:00'));
 
 PRAGMA user_version = 1;
 
