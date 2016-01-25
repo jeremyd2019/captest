@@ -74,4 +74,5 @@ with sqlite3.connect("zones.sqlite") as db:
 			except Exception as e:
 				print line
 				raise
+	db.execute("UPDATE database_version SET last_update_time = datetime('now')");
 	db.commit()
