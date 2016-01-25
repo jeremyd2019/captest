@@ -36,6 +36,7 @@ CREATE TABLE county_zone (
 	county_id integer NOT NULL,
 	zone_state_id integer NOT NULL REFERENCES state (state_id),
 	zone_id integer NOT NULL,
+	PRIMARY KEY (county_state_id, county_id, zone_state_id, zone_id),
 	FOREIGN KEY (county_state_id, county_id) REFERENCES county (state_id, county_id),
 	FOREIGN KEY (zone_state_id, zone_id) REFERENCES zone (state_id, zone_id)
 );
