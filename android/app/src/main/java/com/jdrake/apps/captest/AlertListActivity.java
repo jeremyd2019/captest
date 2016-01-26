@@ -2,7 +2,9 @@ package com.jdrake.apps.captest;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 
 /**
  * An activity representing a list of Alerts. This activity
@@ -23,6 +25,38 @@ public class AlertListActivity extends ActionBarActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (BuildConfig.DEBUG)
+        {
+            try
+            {
+                Class<?> StrictMode = Class.forName("android.os.StrictMode");
+                Class<?> ThreadPolicy = Class.forName("android.os.StrictMode$ThreadPolicy");
+                Class<?> ThreadPolicyBuilder = Class.forName("android.os.StrictMode$ThreadPolicy$Builder");
+
+                // StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build());
+                Object threadBuilder = ThreadPolicyBuilder.newInstance();
+                ThreadPolicyBuilder.getMethod("detectAll").invoke(threadBuilder);
+                ThreadPolicyBuilder.getMethod("penaltyLog").invoke(threadBuilder);
+                StrictMode.getMethod("setThreadPolicy", ThreadPolicy).invoke(null, ThreadPolicyBuilder.getMethod("build").invoke(threadBuilder));
+
+                Class<?> VmPolicy = Class.forName("android.os.StrictMode$VmPolicy");
+                Class<?> VmPolicyBuilder = Class.forName("android.os.StrictMode$VmPolicy$Builder");
+
+                // StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().penaltyDeath().build());
+                Object vmBuilder = VmPolicyBuilder.newInstance();
+                VmPolicyBuilder.getMethod("detectAll").invoke(vmBuilder);
+                VmPolicyBuilder.getMethod("penaltyLog").invoke(vmBuilder);
+                // VmPolicyBuilder.getMethod("penaltyDeath").invoke(vmBuilder);
+                StrictMode.getMethod("setVmPolicy", VmPolicy).invoke(null, VmPolicyBuilder.getMethod("build").invoke(vmBuilder));
+            }
+            catch (Exception e)
+            {
+                Log.w("AlertListActivity", "Unable to set strict mode (unsupported on this os version?)", e);
+            }
+
+            FragmentManager.enableDebugLogging(true);
+        }
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_alert_list);
 
