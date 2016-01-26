@@ -70,7 +70,7 @@ with sqlite3.connect("zones.sqlite") as db:
 				elif state_code != "12":
 					state_code = state_map[state_code]
 				db.execute("INSERT OR IGNORE INTO zone (state_id, zone_id, zone_name) VALUES (?, ?, ?)", (state_code, row[1], row[3]))
-				db.execute("INSERT INTO county_zone (county_state_id, county_id, zone_state_id, zone_id) SELECT :county_state_id, :county_id, :zone_state_id, :zone_id WHERE NOT EXISTS (SELECT 1 FROM county_zone WHERE county_state_id = :county_state_id AND county_id = :county_id AND zone_state_id = :zone_state_id AND zone_id = :zone_id)", {'county_state_id': row[6][:2], 'county_id': row[6][2:], 'zone_state_id': state_code, 'zone_id': row[1]})
+				db.execute("INSERT OR IGNORE INTO county_zone (county_state_id, county_id, zone_state_id, zone_id) VALUES (?, ?, ?, ?)", (row[6][:2], row[6][2:], state_code, row[1]))
 			except Exception as e:
 				print line
 				raise
